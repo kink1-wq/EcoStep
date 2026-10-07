@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.leaflet-container { width: 100%; height: 100%; font-family: inherit; }
+
+/* Точки на карте: заметный, чуть пульсирующий ореол вокруг каждой заявки */
+.ecostep-halo {
+  animation: ecostep-pulse 2.2s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.ecostep-marker {
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+}
+@keyframes ecostep-pulse {
+  0%, 100% { opacity: 0.18; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(1.15); }
+}
+
+/* Отступ снизу под жестовую полосу/home indicator — для страниц, которые могут прокручиваться */
+.safe-bottom {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}

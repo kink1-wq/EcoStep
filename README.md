@@ -1,0 +1,38 @@
+# EcoStep
+Карта загрязнений города: фото → геопозиция → ИИ-анализ → модерация → публикация.
+
+## Быстрый запуск на Windows (батники)
+
+**Первый раз на новом ПК:**
+1. Дважды кликните `setup.bat` — он создаст виртуальное окружение, установит все зависимости (Python и npm) и создаст шаблоны `backend\.env` и `frontend\.env.local`, если их ещё нет.
+2. Откройте созданные `.env`-файлы и впишите реальные ключи (адрес и ключи Supabase, ключ Gemini) — те же, что используете на других своих ПК.
+3. Дважды кликните `start-all.bat` — откроются два окна (backend и frontend), а через несколько секунд сайт сам откроется в браузере на `http://localhost:3000`.
+
+**При каждом следующем запуске** — просто `start-all.bat`. Ничего больше делать не нужно.
+
+Можно запускать бэкенд и фронтенд и по отдельности — `start-backend.bat` и `start-frontend.bat`.
+
+Не закрывайте открывшиеся окна консоли, пока пользуетесь приложением — в них видны логи и ошибки, если что-то пойдёт не так.
+
+## Запуск бэкенда (вручную, без батников)
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env    # заполнить ключи
+uvicorn app.main:app --reload
+```
+Документация API: http://localhost:8000/docs
+
+## Настройка Supabase
+1. Storage → создать **public** бакет `report-photos`.
+2. Database → включить RLS на таблице `reports` (без политик): доступ только через бэкенд.
+3. Админ: в Auth → Users у пользователя задать `app_metadata` = `{"role": "admin"}`.
+
+## Запуск фронтенда
+```bash
+cd frontend
+npm install
+cp .env.local.example .env.local   # адрес API и ключи Supabase (anon key — публичный)
+npm run dev                        # http://localhost:3000
+```
