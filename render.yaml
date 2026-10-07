@@ -1,0 +1,27 @@
+# Render Blueprint: разворачивает backend одной кнопкой (Render dashboard -> New -> Blueprint).
+# Секретные значения (помечены sync: false) нужно будет вставить вручную в дашборде Render -
+# в сам Git-репозиторий они не попадают.
+services:
+  - type: web
+    name: ecostep-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: STORAGE_BUCKET
+        value: report-photos
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-flash-latest
+      - key: CORS_ORIGINS
+        sync: false
