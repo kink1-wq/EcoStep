@@ -97,3 +97,11 @@ npx cap open ios
 ```
 и дальше сборка через Xcode. Также для установки на реальный iPhone (не
 симулятор) нужен аккаунт Apple Developer Program — 99 $/год.
+
+## Логотип приложения
+
+Иконки Android и экран загрузки с логотипом EcoStep лежат в `frontend/resources/android/res/`.
+Они копируются в Android-проект **автоматически** в конце `npm run cap:sync`
+(скрипт `frontend/scripts/apply-android-icons.mjs`). Отдельно применить можно командой
+`npm run cap:icons`. Чтобы старая иконка не осталась в кэше телефона — удалите прежнюю версию
+приложения перед установкой новой.

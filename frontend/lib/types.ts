@@ -36,3 +36,25 @@ export interface CleanupAdmin {
   report_latitude: number;
   report_longitude: number;
 }
+
+/** Заявка на уборку в личном кабинете пользователя. */
+export interface MyCleanup {
+  id: string;
+  report_id: string;
+  photo_url: string;
+  status: CleanupStatusT;
+  created_at: string;
+  report_photo_url: string;
+  report_category: string | null;
+  report_description: string | null;
+}
+
+export interface LatLng {
+  lat: number;
+  lng: number;
+}
+
+/** Просьба «перелететь» картой к точке; n увеличивается при каждом новом запросе. */
+export interface FocusTarget extends LatLng {
+  n: number;
+}

@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import update
 
-from app.api import admin, reports
+from app.api import admin, cleanups, reports
 from app.core.config import settings
 from app.database.session import Base, SessionLocal, engine
 from app.models.cleanup import CleanupStatus, CleanupSubmission
@@ -42,6 +42,7 @@ app.add_middleware(
     allow_methods=["*"], allow_headers=["*"],
 )
 app.include_router(reports.router)
+app.include_router(cleanups.router)
 app.include_router(admin.router)
 
 

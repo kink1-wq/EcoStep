@@ -106,7 +106,7 @@ export default function Map() {
                   <div className="mt-2 flex flex-col gap-1.5">
                     <Link
                       href={`/cleanup?id=${r.id}`}
-                      className="rounded-lg bg-emerald-600 py-1.5 text-center text-sm font-semibold text-white hover:bg-emerald-700"
+                      className="rounded-lg bg-emerald-600 py-1.5 text-center text-sm font-semibold !text-white hover:bg-emerald-700 ecostep-btn"
                     >
                       🧹 Сообщить, что убрано
                     </Link>

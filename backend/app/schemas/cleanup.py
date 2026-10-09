@@ -33,3 +33,10 @@ class AICleanupResult(BaseModel):
     is_clean: bool
     confidence: float
     note: str
+
+
+class CleanupMine(CleanupPublic):
+    """Заявка на уборку в личном кабинете: сама заявка + короткий контекст исходной точки."""
+    report_photo_url: str
+    report_category: str | None
+    report_description: str | None

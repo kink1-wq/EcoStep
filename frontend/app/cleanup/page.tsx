@@ -75,8 +75,11 @@ function CleanupInner() {
       <div className="mx-auto mt-16 max-w-md space-y-4 rounded-2xl border bg-white p-6 text-center">
         <p className="text-4xl">🧹✅</p>
         <h1 className="text-xl font-bold">Фото отправлено</h1>
-        <p className="text-slate-600">ИИ сравнивает его с исходной заявкой. Если место действительно убрано, точка исчезнет с карты.</p>
-        <Link href="/" className="inline-block rounded-lg bg-emerald-600 px-5 py-2 font-semibold text-white">На карту</Link>
+        <p className="text-slate-600">ИИ сравнивает его с исходной заявкой. Если место действительно убрано, точка исчезнет с карты. Статус виден в разделе «Мои заявки».</p>
+        <div className="flex justify-center gap-2">
+          <Link href="/cabinet" className="inline-block rounded-lg bg-emerald-600 px-5 py-2 font-semibold text-white">Мои заявки</Link>
+          <Link href="/" className="inline-block rounded-lg bg-slate-200 px-5 py-2 font-semibold text-slate-700">На карту</Link>
+        </div>
       </div>
     );
 

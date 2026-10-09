@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/useSession";
 import { getCurrentPosition, takePhoto } from "@/lib/native";
+import LocationPicker from "@/components/LocationPickerLoader";
+import type { FocusTarget, LatLng } from "@/lib/types";
 
 /** Уменьшаем фото до 1600px: быстрее загрузка и дешевле анализ ИИ. */
 async function compress(file: File, maxSide = 1600): Promise<File> {
@@ -27,7 +29,10 @@ export default function ReportPage() {
   const { session, loading } = useSession();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [coords, setCoords] = useState<LatLng | null>(null);
+  const [focus, setFocus] = useState<FocusTarget | null>(null);
+  const [source, setSource] = useState<"gps" | "manual" | null>(null);
+  const [locating, setLocating] = useState(false);
   const [geoError, setGeoError] = useState("");
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
@@ -38,10 +43,29 @@ export default function ReportPage() {
     if (!loading && !session) router.replace("/login");
   }, [loading, session, router]);
 
+  const locate = useCallback(async () => {
+    setLocating(true);
+    setGeoError("");
+    try {
+      const p = await getCurrentPosition();
+      setCoords(p);
+      setSource("gps");
+      setFocus((f) => ({ ...p, n: (f?.n ?? 0) + 1 }));
+    } catch {
+      setGeoError("Не удалось определить геопозицию. Отметьте место на карте вручную.");
+    } finally {
+      setLocating(false);
+    }
+  }, []);
+
   useEffect(() => {
-    getCurrentPosition()
-      .then(setCoords)
-      .catch(() => setGeoError("Не удалось определить геопозицию. Разрешите доступ к местоположению."));
+    locate();
+  }, [locate]);
+
+  // Пользователь перетащил метку или нажал на карту
+  const pickManually = useCallback((p: LatLng) => {
+    setCoords(p);
+    setSource("manual");
   }, []);
 
   async function pickPhoto() {
@@ -99,11 +123,39 @@ export default function ReportPage() {
         )}
       </button>
 
-      <p className="text-sm">
-        {coords ? <span className="text-emerald-700">📍 Геопозиция определена ({coords.lat.toFixed(5)}, {coords.lng.toFixed(5)})</span>
-          : geoError ? <span className="text-red-600">{geoError}</span>
-          : <span className="text-slate-500">Определяем геопозицию…</span>}
-      </p>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-semibold">Место на карте</h2>
+          <button
+            type="button"
+            onClick={locate}
+            disabled={locating}
+            className="shrink-0 rounded-lg border bg-white px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+          >
+            {locating ? "Определяем…" : "📍 Моё место"}
+          </button>
+        </div>
+
+        <div className="h-64 overflow-hidden rounded-2xl border bg-slate-100">
+          <LocationPicker value={coords} focus={focus} onChange={pickManually} />
+        </div>
+
+        <p className="text-sm">
+          {coords ? (
+            <span className="text-emerald-700">
+              📍 {source === "manual" ? "Место выбрано вручную" : "Место определено автоматически"} (
+              {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)})
+            </span>
+          ) : geoError ? (
+            <span className="text-red-600">{geoError}</span>
+          ) : (
+            <span className="text-slate-500">Определяем геопозицию…</span>
+          )}
+        </p>
+        <p className="text-xs text-slate-500">
+          Перетащите метку или нажмите на карту, чтобы указать точное место проблемы.
+        </p>
+      </div>
 
       <textarea value={comment} onChange={(e) => setComment(e.target.value)} maxLength={500} rows={3}
         placeholder="Комментарий (необязательно)" className="w-full rounded-lg border p-3" />

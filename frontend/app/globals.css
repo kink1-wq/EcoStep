@@ -22,3 +22,18 @@
 .safe-bottom {
   padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
 }
+
+/* Leaflet красит все ссылки внутри карты в синий — для кнопок-ссылок в попапе возвращаем белый текст */
+.leaflet-container a.ecostep-btn,
+.leaflet-container a.ecostep-btn:hover {
+  color: #ffffff;
+}
+
+/* Метка выбора места: тень и курсор «рука» */
+.ecostep-pin svg {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+  cursor: grab;
+}
+.ecostep-pin.leaflet-dragging svg {
+  cursor: grabbing;
+}
