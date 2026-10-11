@@ -28,6 +28,7 @@ def list_my_cleanups(user: CurrentUser = Depends(get_current_user), db: Session 
             id=sub.id, report_id=sub.report_id, photo_url=sub.photo_url, status=sub.status,
             created_at=sub.created_at, report_photo_url=report.photo_url,
             report_category=report.category, report_description=report.description,
+            report_description_kk=report.description_kk,
         )
         for sub, report in db.execute(q).all()
     ]

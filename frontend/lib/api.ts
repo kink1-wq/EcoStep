@@ -18,3 +18,19 @@ export async function api<T>(path: string, init: RequestInit = {}, auth = false)
   if (res.status === 204) return undefined as T; // например, успешное удаление — тела нет
   return res.json();
 }
+
+/** Скачивает файл с защищённого эндпоинта (например, CSV для администратора): кладёт токен в заголовок и сохраняет файл. */
+export async function downloadFile(path: string, filename: string): Promise<void> {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) throw new Error("Нужно войти в аккаунт");
+  const res = await fetch(BASE + path, { headers: { Authorization: `Bearer ${data.session.access_token}` } });
+  if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

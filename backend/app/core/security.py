@@ -5,9 +5,12 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWKClient
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from supabase import create_client
 
 from app.core.config import settings
+from app.database.session import get_db
+from app.models.social import BlockedUser
 
 log = logging.getLogger(__name__)
 bearer = HTTPBearer()
@@ -58,4 +61,11 @@ def get_current_user(creds: HTTPAuthorizationCredentials = Depends(bearer)) -> C
 def require_admin(user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
     if user.role != "admin":
         raise HTTPException(403, "Нужны права администратора")
+    return user
+
+
+def get_active_user(user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)) -> CurrentUser:
+    """Как get_current_user, но заблокированным пользователям писать (заявки, голоса, жалобы) нельзя."""
+    if db.get(BlockedUser, user.id):
+        raise HTTPException(403, "Ваш аккаунт заблокирован администратором.")
     return user

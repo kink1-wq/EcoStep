@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     # Пороги автомодерации
     auto_approve_confidence: float = 0.80
     auto_reject_confidence: float = 0.85
+    # Защита от злоупотреблений
+    rate_limit_per_minute: int = 3        # не более N заявок (и заявок на уборку) в минуту с одного аккаунта
+    cleanup_max_distance_m: int = 1000    # подтверждать уборку можно, находясь не дальше N метров от точки
+    duplicate_radius_m: int = 30          # радиус поиска уже отмеченных точек рядом (дубликаты)
+    flag_hide_threshold: int = 3          # столько жалоб скрывают точку с карты до проверки администратором
 
 
 settings = Settings()

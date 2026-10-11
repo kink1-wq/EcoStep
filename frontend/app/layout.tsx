@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
+import { I18nProvider } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "EcoStep — карта загрязнений города",
@@ -23,8 +24,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           (h-full) корректно пробрасывается вниз до карты через вложенные блоки.
           Контент выше этой высоты всё равно прокручивается — overflow тут не ограничен. */}
       <body className="flex h-screen h-[100dvh] flex-col bg-slate-50 text-slate-900 antialiased">
-        <Header />
-        <main className="min-h-0 flex-1">{children}</main>
+        <I18nProvider>
+          <Header />
+          <main className="min-h-0 flex-1">{children}</main>
+        </I18nProvider>
       </body>
     </html>
   );

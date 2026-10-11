@@ -1,15 +1,39 @@
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import update
+from sqlalchemy import text, update
 
-from app.api import admin, cleanups, reports
+from app.api import admin, cleanups, reports, stats
 from app.core.config import settings
 from app.database.session import Base, SessionLocal, engine
 from app.models.cleanup import CleanupStatus, CleanupSubmission
 from app.models.report import Report, ReportStatus
+from app.models import social  # noqa: F401  — чтобы таблицы жалоб, голосов и блокировок попали в create_all
+from app.services.notes import NOTE_STUCK
+
+log = logging.getLogger(__name__)
+
+# Все наши таблицы: на них включаем защиту строк (RLS), чтобы к ним нельзя было обратиться
+# напрямую через публичный ключ Supabase — только через этот сервер.
+TABLES = ["reports", "cleanup_submissions", "report_supports", "report_flags", "blocked_users"]
+
+
+def ensure_schema() -> None:
+    """Лёгкая автоматическая «миграция» при старте (Postgres): новые колонки и защита таблиц.
+    Все команды безопасно повторять — они ничего не делают, если уже применены."""
+    if engine.dialect.name != "postgresql":
+        return
+    statements = ["ALTER TABLE reports ADD COLUMN IF NOT EXISTS description_kk TEXT"]
+    statements += [f"ALTER TABLE {t} ENABLE ROW LEVEL SECURITY" for t in TABLES]
+    for stmt in statements:
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(stmt))
+        except Exception:
+            log.exception("Не удалось выполнить: %s", stmt)
 
 
 def release_stuck_reports() -> None:
@@ -19,12 +43,12 @@ def release_stuck_reports() -> None:
         db.execute(
             update(Report)
             .where(Report.status == ReportStatus.pending, Report.created_at < cutoff)
-            .values(status=ReportStatus.needs_review, moderation_note="Анализ не завершился — нужна проверка")
+            .values(status=ReportStatus.needs_review, moderation_note=NOTE_STUCK)
         )
         db.execute(
             update(CleanupSubmission)
             .where(CleanupSubmission.status == CleanupStatus.pending, CleanupSubmission.created_at < cutoff)
-            .values(status=CleanupStatus.needs_review, moderation_note="Анализ не завершился — нужна проверка")
+            .values(status=CleanupStatus.needs_review, moderation_note=NOTE_STUCK)
         )
         db.commit()
 
@@ -32,6 +56,7 @@ def release_stuck_reports() -> None:
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(engine)  # для MVP; позже — Alembic
+    ensure_schema()
     release_stuck_reports()
     yield
 
@@ -43,6 +68,7 @@ app.add_middleware(
 )
 app.include_router(reports.router)
 app.include_router(cleanups.router)
+app.include_router(stats.router)
 app.include_router(admin.router)
 
 

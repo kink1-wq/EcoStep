@@ -1,26 +1,33 @@
+"use client";
+import { useI18n } from "@/lib/i18n";
 import type { CleanupStatusT, Status } from "@/lib/types";
 
-const MAP: Record<Status, [string, string]> = {
-  pending: ["Анализ ИИ…", "bg-blue-100 text-blue-800"],
-  approved: ["На карте", "bg-emerald-100 text-emerald-800"],
-  rejected: ["Отклонена", "bg-red-100 text-red-800"],
-  needs_review: ["На проверке", "bg-amber-100 text-amber-800"],
-  resolved: ["Убрана", "bg-slate-200 text-slate-700"],
+const COLORS: Record<Status, string> = {
+  pending: "bg-blue-100 text-blue-800",
+  approved: "bg-emerald-100 text-emerald-800",
+  rejected: "bg-red-100 text-red-800",
+  needs_review: "bg-amber-100 text-amber-800",
+  resolved: "bg-slate-200 text-slate-700",
 };
 
-const CLEANUP_MAP: Record<CleanupStatusT, [string, string]> = {
-  pending: ["Анализ ИИ…", "bg-blue-100 text-blue-800"],
-  confirmed: ["Уборка подтверждена", "bg-emerald-100 text-emerald-800"],
-  rejected: ["Не подтверждено", "bg-red-100 text-red-800"],
-  needs_review: ["На проверке", "bg-amber-100 text-amber-800"],
+const CLEANUP_COLORS: Record<CleanupStatusT, string> = {
+  pending: "bg-blue-100 text-blue-800",
+  confirmed: "bg-emerald-100 text-emerald-800",
+  rejected: "bg-red-100 text-red-800",
+  needs_review: "bg-amber-100 text-amber-800",
 };
 
 export default function StatusBadge({ status }: { status: Status }) {
-  const [label, cls] = MAP[status];
-  return <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{label}</span>;
+  const { t } = useI18n();
+  return (
+    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${COLORS[status]}`}>
+      {t(`status.${status}` as const)}
+    </span>
+  );
 }
 
 export function CleanupStatusBadge({ status }: { status: CleanupStatusT }) {
-  const [label, cls] = CLEANUP_MAP[status];
-  return <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{label}</span>;
+  const { t } = useI18n();
+  const label = status === "confirmed" || status === "rejected" ? t(`cstatus.${status}` as const) : t(`status.${status}` as const);
+  return <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${CLEANUP_COLORS[status]}`}>{label}</span>;
 }

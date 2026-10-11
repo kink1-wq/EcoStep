@@ -33,6 +33,7 @@ class Report(Base):
     )
     category: Mapped[str | None] = mapped_column(String(64))
     description: Mapped[str | None] = mapped_column(Text)
+    description_kk: Mapped[str | None] = mapped_column(Text)
     ai_is_polluted: Mapped[bool | None] = mapped_column(Boolean)
     ai_confidence: Mapped[float | None] = mapped_column(Float)
     moderation_note: Mapped[str | None] = mapped_column(Text)

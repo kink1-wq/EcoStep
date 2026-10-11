@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from app.models.cleanup import CleanupStatus
+from app.schemas.report import PrivacyBox
 
 
 class CleanupPublic(BaseModel):
@@ -33,6 +34,7 @@ class AICleanupResult(BaseModel):
     is_clean: bool
     confidence: float
     note: str
+    privacy_boxes: list[PrivacyBox] = []
 
 
 class CleanupMine(CleanupPublic):
@@ -40,3 +42,4 @@ class CleanupMine(CleanupPublic):
     report_photo_url: str
     report_category: str | None
     report_description: str | None
+    report_description_kk: str | None = None
