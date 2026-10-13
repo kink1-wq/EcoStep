@@ -47,15 +47,10 @@ npm run cap:android        # открывает проект в Android Studio
 
 ## Разрешения камеры и геопозиции
 
-После `npx cap add android` откройте
-`android/app/src/main/AndroidManifest.xml` и добавьте перед закрывающим
-тегом `</manifest>`:
-
-```xml
-<uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-```
+Добавляются **автоматически** в конце `npm run cap:sync` (скрипт `frontend/scripts/setup-android.mjs`):
+геолокация (точная и приблизительная), камера. Вручную править `AndroidManifest.xml` не нужно.
+Если вы раньше отказали приложению в доступе, включите его в настройках телефона:
+**Настройки → Приложения → EcoStep → Разрешения → Геолокация / Камера**.
 
 ## Если бэкенд на http:// (не https)
 
@@ -102,6 +97,6 @@ npx cap open ios
 
 Иконки Android и экран загрузки с логотипом EcoStep лежат в `frontend/resources/android/res/`.
 Они копируются в Android-проект **автоматически** в конце `npm run cap:sync`
-(скрипт `frontend/scripts/apply-android-icons.mjs`). Отдельно применить можно командой
-`npm run cap:icons`. Чтобы старая иконка не осталась в кэше телефона — удалите прежнюю версию
+(скрипт `frontend/scripts/setup-android.mjs`). Отдельно применить можно командой
+`npm run cap:setup`. Чтобы старая иконка не осталась в кэше телефона — удалите прежнюю версию
 приложения перед установкой новой.

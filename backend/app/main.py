@@ -62,8 +62,13 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="EcoStep API", lifespan=lifespan)
+# Адреса, с которых открывается мобильное приложение (Capacitor): Android — https://localhost
+# (в старых версиях http://localhost), iOS — capacitor://localhost. Они разрешены всегда, поэтому
+# переменная CORS_ORIGINS нужна только для адресов сайта (Vercel и т.п.).
+APP_ORIGIN_REGEX = r"^(https?://localhost(:\d+)?|capacitor://localhost|ionic://localhost)$"
+
 app.add_middleware(
-    CORSMiddleware, allow_origins=settings.cors_origins,
+    CORSMiddleware, allow_origins=settings.cors_origins, allow_origin_regex=APP_ORIGIN_REGEX,
     allow_methods=["*"], allow_headers=["*"],
 )
 app.include_router(reports.router)

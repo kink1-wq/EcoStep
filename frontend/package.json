@@ -6,9 +6,9 @@
     "build": "next build",
     "start": "next start",
     "export": "next build",
-    "cap:sync": "next build && npx cap sync && node scripts/apply-android-icons.mjs",
+    "cap:sync": "next build && npx cap sync && node scripts/setup-android.mjs",
     "cap:android": "npx cap open android",
-    "cap:icons": "node scripts/apply-android-icons.mjs"
+    "cap:setup": "node scripts/setup-android.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

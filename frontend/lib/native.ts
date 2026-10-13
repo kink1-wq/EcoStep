@@ -5,20 +5,32 @@ import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 
 export const isNative = () => Capacitor.isNativePlatform();
 
-export async function getCurrentPosition(): Promise<{ lat: number; lng: number }> {
-  if (isNative()) {
-    const perm = await Geolocation.requestPermissions();
-    if (perm.location !== "granted" && perm.coarseLocation !== "granted") {
-      throw new Error("Доступ к геопозиции не разрешён");
-    }
-    const pos = await Geolocation.getCurrentPosition();
+type Position = { lat: number; lng: number };
+
+async function nativePosition(): Promise<Position> {
+  const perm = await Geolocation.requestPermissions();
+  if (perm.location !== "granted" && perm.coarseLocation !== "granted") {
+    throw new Error("Доступ к геопозиции не разрешён");
+  }
+  try {
+    // Сначала точное определение по GPS; в помещении оно часто не успевает…
+    const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 12000 });
+    return { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  } catch {
+    // …тогда довольствуемся приблизительным местом по сети (Wi-Fi и вышки)
+    const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
     return { lat: pos.coords.latitude, lng: pos.coords.longitude };
   }
+}
+
+export async function getCurrentPosition(): Promise<Position> {
+  if (isNative()) return nativePosition();
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error("Геолокация недоступна"));
     navigator.geolocation.getCurrentPosition(
       (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
-      (e) => reject(new Error(e.message))
+      (e) => reject(new Error(e.message)),
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
     );
   });
 }
