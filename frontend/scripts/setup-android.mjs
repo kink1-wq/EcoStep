@@ -16,8 +16,13 @@ if (!existsSync(androidDir)) {
 // 1) Логотип
 const iconsFrom = join(root, "resources", "android", "res");
 const iconsTo = join(androidDir, "app", "src", "main", "res");
-cpSync(iconsFrom, iconsTo, { recursive: true, force: true });
-console.log("[android] Логотип EcoStep применён.");
+if (existsSync(iconsFrom)) {
+  cpSync(iconsFrom, iconsTo, { recursive: true, force: true });
+  console.log("[android] Логотип EcoStep применён.");
+} else {
+  console.log("[android] ВНИМАНИЕ: папка frontend\\resources не найдена — логотип не применён (остаётся стандартный).");
+  console.log("[android] Скопируйте папку resources из архива проекта в frontend и выполните: npm run cap:setup");
+}
 
 // 2) Разрешения
 const manifestPath = join(androidDir, "app", "src", "main", "AndroidManifest.xml");
