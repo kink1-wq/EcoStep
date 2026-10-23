@@ -37,3 +37,17 @@
 .ecostep-pin.leaflet-dragging svg {
   cursor: grabbing;
 }
+
+/* Положение пользователя на карте: синяя точка с мягко пульсирующим ореолом */
+.ecostep-me-halo {
+  animation: ecostep-me-pulse 2s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.ecostep-me {
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+}
+@keyframes ecostep-me-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50% { opacity: 0.12; transform: scale(1.15); }
+}

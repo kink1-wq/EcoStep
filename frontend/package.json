@@ -6,9 +6,10 @@
     "build": "next build",
     "start": "next start",
     "export": "next build",
-    "cap:sync": "next build && npx cap sync && node scripts/setup-android.mjs",
+    "cap:sync": "next build && node scripts/strip-downloads.mjs && npx cap sync && node scripts/setup-android.mjs",
     "cap:android": "npx cap open android",
-    "cap:setup": "node scripts/setup-android.mjs"
+    "cap:setup": "node scripts/setup-android.mjs",
+    "publish:apk": "node scripts/publish-apk.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
 import { useI18n, type Lang } from "@/lib/i18n";
@@ -29,8 +30,12 @@ export default function Header() {
   const { session, isAdmin } = useSession();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [native, setNative] = useState(false);
   const close = () => setOpen(false);
   const item = "block rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 active:bg-emerald-100";
+
+  // В самом приложении пункт «Скачать приложение» не нужен
+  useEffect(() => setNative(Capacitor.isNativePlatform()), []);
 
   return (
     <header
@@ -38,8 +43,10 @@ export default function Header() {
       style={{ paddingTop: "env(safe-area-inset-top, 0px)" }} // отступ под вырез/чёлку экрана
     >
       <div className="flex h-14 items-center justify-between px-3">
-        <Link href="/" onClick={close} className="flex shrink-0 items-center self-stretch pr-2 text-lg font-bold text-emerald-700">
-          🌿 EcoStep
+        <Link href="/" onClick={close} className="flex shrink-0 items-center gap-2 self-stretch pr-2 text-lg font-bold text-emerald-700">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" width={34} height={34} className="h-[34px] w-[34px]" />
+          EcoStep
         </Link>
         <div className="flex items-center gap-2">
           <LangSwitch />
@@ -59,11 +66,16 @@ export default function Header() {
         <>
           {/* прозрачная подложка: нажатие вне меню закрывает его */}
           <div className="fixed inset-0" onClick={close} />
-          <nav className="absolute right-2 top-full mt-1 w-60 rounded-xl border bg-white p-1.5 shadow-lg">
+          <nav className="absolute right-2 top-full mt-1 w-64 rounded-xl border bg-white p-1.5 shadow-lg">
             <Link href="/" onClick={close} className={item}>🗺 {t("nav.map")}</Link>
             <Link href="/stats" onClick={close} className={item}>📊 {t("nav.stats")}</Link>
             {session && <Link href="/cabinet" onClick={close} className={item}>📋 {t("nav.mine")}</Link>}
             {isAdmin && <Link href="/admin" onClick={close} className={item}>🛡 {t("nav.admin")}</Link>}
+            {!native && <Link href="/download" onClick={close} className={item}>📱 {t("nav.download")}</Link>}
+            <div className="my-1 border-t" />
+            <Link href="/privacy" onClick={close} className={`${item} !text-xs !font-normal`}>📄 {t("nav.privacy")}</Link>
+            <Link href="/terms" onClick={close} className={`${item} !text-xs !font-normal`}>📄 {t("nav.terms")}</Link>
+            <div className="my-1 border-t" />
             {session ? (
               <button
                 onClick={() => {

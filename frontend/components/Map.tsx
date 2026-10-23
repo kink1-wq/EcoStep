@@ -1,13 +1,14 @@
 "use client";
 import "leaflet/dist/leaflet.css";
 import Link from "next/link";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import { CircleMarker, MapContainer, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import type { Map as LeafletMap } from "leaflet";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CircleMarker, MapContainer, Pane, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
-import { getCurrentPosition } from "@/lib/native";
+import { getCurrentPosition, watchPosition } from "@/lib/native";
 import { useSession } from "@/lib/useSession";
-import type { Report } from "@/lib/types";
+import type { LatLng, Report } from "@/lib/types";
 
 const CENTER: [number, number] = [
   Number(process.env.NEXT_PUBLIC_MAP_LAT ?? 51.1605),
@@ -30,7 +31,7 @@ const FLAG_REASONS = [
   { key: "map.reason.other", ru: "Другое" },
 ] as const;
 
-function Controller({ onBounds }: { onBounds: (q: string) => void }) {
+function Controller({ onBounds, onMap }: { onBounds: (q: string) => void; onMap: (m: LeafletMap) => void }) {
   const map = useMap();
   const emit = useCallback(() => {
     const b = map.getBounds();
@@ -41,11 +42,8 @@ function Controller({ onBounds }: { onBounds: (q: string) => void }) {
 
   useMapEvents({ moveend: emit });
   useEffect(() => {
+    onMap(map);
     emit();
-    // Центрируем карту на пользователе, если он разрешил геопозицию
-    getCurrentPosition()
-      .then((p) => map.setView([p.lat, p.lng], 14))
-      .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
@@ -189,6 +187,41 @@ export default function Map() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
+  // положение самого пользователя: синяя точка на карте, обновляется, пока вы идёте
+  const [me, setMe] = useState<LatLng | null>(null);
+  const [mapInst, setMapInst] = useState<LeafletMap | null>(null);
+  const centered = useRef(false);
+
+  useEffect(() => {
+    let stop: (() => void) | undefined;
+    let cancelled = false;
+    watchPosition(setMe).then((s) => (cancelled ? s() : (stop = s)));
+    return () => {
+      cancelled = true;
+      stop?.();
+    };
+  }, []);
+
+  // при первом определении места один раз приближаем карту к пользователю
+  useEffect(() => {
+    if (me && mapInst && !centered.current) {
+      centered.current = true;
+      mapInst.setView([me.lat, me.lng], 14);
+    }
+  }, [me, mapInst]);
+
+  async function locateMe() {
+    if (!mapInst) return;
+    setError("");
+    try {
+      const p = me ?? (await getCurrentPosition());
+      if (!me) setMe(p);
+      mapInst.setView([p.lat, p.lng], Math.max(mapInst.getZoom(), 16));
+    } catch {
+      setError(t("map.locateFail"));
+    }
+  }
+
   useEffect(() => {
     if (!query) return;
     api<Report[]>(`/api/reports?${query}`).then(setReports).catch(() => {});
@@ -221,7 +254,24 @@ export default function Map() {
           attribution="&copy; OpenStreetMap"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <Controller onBounds={setQuery} />
+        <Controller onBounds={setQuery} onMap={setMapInst} />
+        {me && (
+          // отдельный слой выше точек заявок, чтобы синюю точку не перекрывали метки
+          <Pane name="me" style={{ zIndex: 450 }}>
+            <CircleMarker
+              center={[me.lat, me.lng]}
+              radius={24}
+              pathOptions={{ className: "ecostep-me-halo", color: "transparent", fillColor: "#2563eb", fillOpacity: 0.18 }}
+              interactive={false}
+            />
+            <CircleMarker
+              center={[me.lat, me.lng]}
+              radius={9}
+              pathOptions={{ className: "ecostep-me", color: "#ffffff", weight: 3, fillColor: "#2563eb", fillOpacity: 1 }}
+              interactive={false}
+            />
+          </Pane>
+        )}
         {visible.map((r) => {
           const color = COLORS[r.category ?? ""] ?? "#475569";
           return (
@@ -267,6 +317,17 @@ export default function Map() {
           ))}
         </select>
       )}
+
+      <button
+        type="button"
+        onClick={locateMe}
+        aria-label={t("map.locate")}
+        title={t("map.locate")}
+        className="absolute right-3 z-[1000] grid h-12 w-12 place-items-center rounded-full border bg-white text-xl shadow-lg hover:bg-slate-50 active:bg-slate-100"
+        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))" }}
+      >
+        📍
+      </button>
 
       {error && (
         <p className="absolute bottom-3 left-1/2 z-[1000] -translate-x-1/2 rounded-lg bg-red-600 px-3 py-1.5 text-sm text-white shadow">

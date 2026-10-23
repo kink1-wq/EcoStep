@@ -35,6 +35,37 @@ export async function getCurrentPosition(): Promise<Position> {
   });
 }
 
+/**
+ * Следит за положением пользователя и вызывает onPos при каждом обновлении.
+ * Возвращает функцию, которая останавливает слежение (вызывайте её, когда карта закрывается — это экономит батарею).
+ */
+export async function watchPosition(onPos: (p: Position) => void, onError?: () => void): Promise<() => void> {
+  if (isNative()) {
+    const perm = await Geolocation.requestPermissions().catch(() => null);
+    if (!perm || (perm.location !== "granted" && perm.coarseLocation !== "granted")) {
+      onError?.();
+      return () => {};
+    }
+    const id = await Geolocation.watchPosition({ enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 }, (pos) => {
+      if (pos) onPos({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      else onError?.();
+    });
+    return () => {
+      Geolocation.clearWatch({ id });
+    };
+  }
+  if (!navigator.geolocation) {
+    onError?.();
+    return () => {};
+  }
+  const id = navigator.geolocation.watchPosition(
+    (p) => onPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
+    () => onError?.(),
+    { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+  );
+  return () => navigator.geolocation.clearWatch(id);
+}
+
 /** Возвращает File с фото: с камеры телефона в приложении, из выбора файла в браузере. */
 export async function takePhoto(): Promise<File> {
   if (isNative()) {
