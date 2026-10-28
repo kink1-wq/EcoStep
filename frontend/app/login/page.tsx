@@ -1,4 +1,5 @@
 "use client";
+import { BrandArt } from "@/components/Brand";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -100,9 +101,15 @@ export default function LoginPage() {
 
   return (
     <>
-      <form onSubmit={submit} className="safe-bottom mx-auto mt-16 max-w-sm space-y-4 rounded-2xl border bg-white p-6 shadow-sm">
-        <h1 className="text-xl font-bold">{mode === "in" ? t("login.signin") : t("login.signup")}</h1>
+      <div className="auth-page"><aside className="auth-story"><div className="eyebrow">ECOSTEP COMMUNITY</div><h1>{t("brand.loginTitle")}</h1><p>{t("brand.loginText")}</p><BrandArt/></aside>
+      <form onSubmit={submit} className="auth-form space-y-4">
+        <h2 key={mode} className="tab-heading">{mode === "in" ? t("brand.welcome") : t("brand.signupWelcome")}</h2>
+        <p className="auth-subtitle">{t("brand.loginSub")}</p>
+        <div className="auth-tabs" data-mode={mode}><button type="button" aria-pressed={mode === "in"} onClick={() => setMode("in")}>{t("login.signin")}</button><button type="button" aria-pressed={mode === "up"} onClick={() => setMode("up")}>{t("login.signup")}</button></div>
+        <label className="field-label" htmlFor="email">{t("brand.email")}</label>
         <input
+          id="email"
+          autoComplete="email"
           type="email"
           required
           placeholder={t("login.email")}
@@ -110,7 +117,10 @@ export default function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           className="w-full rounded-lg border px-3 py-2"
         />
+        <label className="field-label" htmlFor="password">{t("login.password")}</label>
         <input
+          id="password"
+          autoComplete={mode === "in" ? "current-password" : "new-password"}
           type="password"
           required
           minLength={6}
@@ -126,7 +136,7 @@ export default function LoginPage() {
           {!consentOk && <p className="text-xs text-slate-500">{t("login.consentRequired")}</p>}
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
         {info && <p className="text-sm text-emerald-700">{info}</p>}
         <button
           disabled={busy || !consentOk}
@@ -141,7 +151,7 @@ export default function LoginPage() {
         >
           {mode === "in" ? t("login.toSignup") : t("login.toSignin")}
         </button>
-      </form>
+      </form></div>
 
       {legal && <LegalModal kind={legal} onClose={() => setLegal(null)} />}
     </>

@@ -1,6 +1,7 @@
 "use client";
+import Icon from "@/components/Icon";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/MotionLink";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useI18n, type Lang } from "@/lib/i18n";
@@ -114,8 +115,8 @@ function AppealInner() {
 
   return (
     <div className="safe-bottom mx-auto max-w-2xl space-y-4 p-4">
-      <Link href="/" className="text-sm text-emerald-700 hover:underline">{t("appeal.back")}</Link>
-      <h1 className="text-xl font-bold">📨 {t("appeal.title")}</h1>
+      <Link href="/map" className="text-sm text-emerald-700 hover:underline">{t("appeal.back")}</Link>
+      <h1 className="text-xl font-bold"><Icon name="file" className="heading-icon"/> {t("appeal.title")}</h1>
       <p className="text-sm text-slate-600">{t("appeal.intro")}</p>
 
       <div className="flex items-center gap-2 text-sm">
@@ -138,13 +139,13 @@ function AppealInner() {
 
       <div className="flex flex-wrap gap-2">
         <button onClick={copy} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
-          {copied ? t("appeal.copied") : t("appeal.copy")}
+          <Icon name={copied ? "check" : "copy"} className="inline-icon"/> {copied ? t("appeal.copied") : t("appeal.copy")}
         </button>
         <a href={report.photo_url} target="_blank" rel="noreferrer" className="rounded-lg border px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-          {t("appeal.photo")}
+          <Icon name="image" className="inline-icon"/> {t("appeal.photo")}
         </a>
         <a href="https://eotinish.kz" target="_blank" rel="noreferrer" className="rounded-lg border px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-          {t("appeal.eotinish")} ↗
+          {t("appeal.eotinish")} <Icon name="external" className="inline-icon"/>
         </a>
       </div>
     </div>

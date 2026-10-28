@@ -1,4 +1,6 @@
 "use client";
+import { useI18n } from "@/lib/i18n";
+import Icon from "@/components/Icon";
 import { useCallback, useEffect, useState } from "react";
 import { api, downloadFile } from "@/lib/api";
 import { useSession } from "@/lib/useSession";
@@ -10,6 +12,7 @@ const osmLink = (lat: number, lng: number) =>
   `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`;
 
 export default function AdminPage() {
+  const { t } = useI18n();
   const { loading, isAdmin } = useSession();
   const [tab, setTab] = useState<Tab>("reports");
   const [items, setItems] = useState<AdminReport[]>([]);
@@ -103,6 +106,7 @@ export default function AdminPage() {
   const tabBtn = (id: Tab, label: string, n: number) => (
     <button
       key={id}
+      aria-pressed={tab === id}
       onClick={() => setTab(id)}
       className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${tab === id ? "bg-emerald-600 text-white" : "bg-white text-slate-600"}`}
     >
@@ -114,12 +118,13 @@ export default function AdminPage() {
   const AuthorLine = ({ r }: { r: AdminReport }) => (
     <p className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
       Автор: {r.user_id.slice(0, 8)}…
-      <button onClick={() => blockAuthor(r.user_id)} className="text-red-600 hover:underline">🚫 Заблокировать автора</button>
+      <button onClick={() => blockAuthor(r.user_id)} className="text-red-600 hover:underline"><Icon name="ban" className="inline-icon"/> Заблокировать автора</button>
     </p>
   );
 
   return (
-    <div className="safe-bottom mx-auto max-w-3xl space-y-3 p-4">
+    <div className="safe-bottom admin-page mx-auto max-w-3xl space-y-3 p-4">
+      <div className="page-intro"><div className="eyebrow">{t("nav.admin")}</div><h1>{t("brand.adminTitle")}</h1><p>{t("brand.adminIntro")}</p></div>
       <div className="flex flex-wrap gap-2">
         {tabBtn("reports", "Сомнительные заявки", items.length)}
         {tabBtn("cleanups", "Заявки на уборку", cleanups.length)}
@@ -137,9 +142,10 @@ export default function AdminPage() {
       {error && <p className="text-red-600">{error}</p>}
       {info && <p className="text-emerald-700">{info}</p>}
 
+      <div key={tab} className="tab-content space-y-3">
       {tab === "reports" && (
         <>
-          {items.length === 0 && <p className="text-slate-500">Очередь пуста 🎉</p>}
+          {items.length === 0 && <p className="text-slate-500"><Icon name="check" className="inline-icon"/> Очередь пуста</p>}
           {items.map((r) => (
             <div key={r.id} className="flex flex-col gap-3 rounded-xl border bg-white p-3 sm:flex-row">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -149,7 +155,7 @@ export default function AdminPage() {
                 <p>{r.description ?? "ИИ не смог описать"}</p>
                 {r.user_comment && <p className="text-slate-500">Комментарий: {r.user_comment}</p>}
                 <p className="text-slate-400">{r.moderation_note}</p>
-                {r.flag_count > 0 && <p className="text-red-600">⚑ Жалоб: {r.flag_count}</p>}
+                {r.flag_count > 0 && <p className="text-red-600"><Icon name="flag" className="inline-icon"/> Жалоб: {r.flag_count}</p>}
                 <a className="text-emerald-700 underline" target="_blank" rel="noreferrer" href={osmLink(r.latitude, r.longitude)}>
                   Открыть место на карте
                 </a>
@@ -167,7 +173,7 @@ export default function AdminPage() {
 
       {tab === "cleanups" && (
         <>
-          {cleanups.length === 0 && <p className="text-slate-500">Очередь пуста 🎉</p>}
+          {cleanups.length === 0 && <p className="text-slate-500"><Icon name="check" className="inline-icon"/> Очередь пуста</p>}
           {cleanups.map((c) => (
             <div key={c.id} className="space-y-2 rounded-xl border bg-white p-3">
               <p className="text-sm"><b>{c.report_category ?? "Загрязнение"}</b> — {c.report_description}</p>
@@ -190,7 +196,7 @@ export default function AdminPage() {
               </a>
               <p className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
                 Автор заявки на уборку: {c.user_id.slice(0, 8)}…
-                <button onClick={() => blockAuthor(c.user_id)} className="text-red-600 hover:underline">🚫 Заблокировать</button>
+                <button onClick={() => blockAuthor(c.user_id)} className="text-red-600 hover:underline"><Icon name="ban" className="inline-icon"/> Заблокировать</button>
               </p>
               <div className="flex gap-2 pt-1">
                 <button onClick={() => decideCleanup(c.id, true)} className={`${btn} bg-emerald-600`}>Подтвердить, убрано</button>
@@ -206,7 +212,7 @@ export default function AdminPage() {
           <p className="text-xs text-slate-500">
             3 жалобы от разных пользователей автоматически скрывают точку с публичной карты до вашего решения.
           </p>
-          {flags.length === 0 && <p className="text-slate-500">Жалоб нет 🎉</p>}
+          {flags.length === 0 && <p className="text-slate-500"><Icon name="check" className="inline-icon"/> Жалоб нет</p>}
           {flags.map((r) => (
             <div key={r.id} className="flex flex-col gap-3 rounded-xl border bg-white p-3 sm:flex-row">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -214,7 +220,7 @@ export default function AdminPage() {
               <div className="flex-1 space-y-1 text-sm">
                 <p><b>{r.category ?? "—"}</b> · статус: {r.status}</p>
                 <p>{r.description}</p>
-                <p className="text-red-600">⚑ Жалоб: {r.flag_count}{r.flag_count >= 3 ? " — точка скрыта с карты" : ""}</p>
+                <p className="text-red-600"><Icon name="flag" className="inline-icon"/> Жалоб: {r.flag_count}{r.flag_count >= 3 ? " — точка скрыта с карты" : ""}</p>
                 {r.flag_reasons.length > 0 && <p className="text-slate-500">Причины: {r.flag_reasons.join("; ")}</p>}
                 <a className="text-emerald-700 underline" target="_blank" rel="noreferrer" href={osmLink(r.latitude, r.longitude)}>
                   Открыть место на карте
@@ -248,6 +254,7 @@ export default function AdminPage() {
           ))}
         </>
       )}
+      </div>
     </div>
   );
 }

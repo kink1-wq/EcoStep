@@ -1,6 +1,7 @@
 "use client";
+import Icon from "@/components/Icon";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/MotionLink";
 import { Capacitor } from "@capacitor/core";
 import { useI18n } from "@/lib/i18n";
 
@@ -30,7 +31,8 @@ export default function DownloadPage() {
   const steps = ["download.s1", "download.s2", "download.s3", "download.s4"] as const;
 
   return (
-    <div className="safe-bottom mx-auto max-w-xl space-y-5 p-4">
+    <div className="safe-bottom download-page mx-auto space-y-5 p-4">
+      <div className="eyebrow">{t("brand.downloadEyebrow")}</div>
       <div className="space-y-3 rounded-2xl border bg-white p-5 text-center shadow-sm">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="EcoStep" width={96} height={96} className="mx-auto h-24 w-24" />
@@ -46,7 +48,7 @@ export default function DownloadPage() {
               download={info.file}
               className="inline-block w-full rounded-xl bg-emerald-600 px-6 py-3.5 text-lg font-semibold !text-white shadow hover:bg-emerald-700 active:bg-emerald-800 sm:w-auto"
             >
-              {t("download.button")}
+              <Icon name="download" className="inline-icon"/> {t("download.button")}
             </a>
             <dl className="mx-auto max-w-sm space-y-1 text-left text-xs text-slate-500">
               <div className="flex justify-between gap-3">

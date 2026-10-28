@@ -1,4 +1,5 @@
 "use client";
+import Icon, { type IconName } from "@/components/Icon";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
@@ -8,17 +9,17 @@ const pct = (x: number | null) => (x === null ? null : `${Math.round(x * 100)}%`
 
 function Card({ label, value, accent }: { label: string; value: string | number; accent?: string }) {
   return (
-    <div className="rounded-2xl border bg-white p-3">
+    <div className="stat-card">
       <div className={`text-2xl font-bold ${accent ?? "text-slate-900"}`}>{value}</div>
       <div className="mt-0.5 text-xs text-slate-500">{label}</div>
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, icon }: { title: string; children: React.ReactNode; icon?: IconName }) {
   return (
     <section className="space-y-3 rounded-2xl border bg-white p-4">
-      <h2 className="font-semibold">{title}</h2>
+      <h2 className="section-title">{icon && <Icon name={icon}/>}<span>{title}</span></h2>
       {children}
     </section>
   );
@@ -86,13 +87,13 @@ export default function StatsPage() {
   const dayLabel = (iso: string) => iso.slice(8, 10) + "." + iso.slice(5, 7);
 
   return (
-    <div className="safe-bottom mx-auto max-w-3xl space-y-4 p-4">
-      <div>
-        <h1 className="text-xl font-bold">📊 {t("stats.title")}</h1>
+    <div className="safe-bottom mx-auto max-w-5xl space-y-4 p-4">
+      <div className="page-intro"><div className="eyebrow">{t("brand.statsEyebrow")}</div>
+        <h1>{t("stats.title")}</h1>
         <p className="text-sm text-slate-500">{t("stats.subtitle")}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card label={t("stats.total")} value={stats.total} />
         <Card label={t("stats.active")} value={stats.active} accent="text-amber-600" />
         <Card label={t("stats.resolved")} value={stats.resolved} accent="text-emerald-600" />
@@ -139,24 +140,24 @@ export default function StatsPage() {
         />
         <div className="flex h-28 items-end gap-[3px]">
           {stats.by_day.map((d) => (
-            <div key={d.date} className="flex h-full flex-1 items-end gap-px" title={`${dayLabel(d.date)}: +${d.reported} / ✓${d.resolved}`}>
+            <div key={d.date} className="flex h-full flex-1 items-end gap-px" title={`${dayLabel(d.date)}: +${d.reported} / ${t("stats.legendResolved")}: ${d.resolved}`}>
               <div className="flex-1 rounded-t bg-amber-500" style={{ height: `${(d.reported / maxDay) * 100}%`, minHeight: d.reported ? 3 : 0 }} />
               <div className="flex-1 rounded-t bg-emerald-500" style={{ height: `${(d.resolved / maxDay) * 100}%`, minHeight: d.resolved ? 3 : 0 }} />
             </div>
           ))}
         </div>
         <div className="flex justify-between text-[10px] text-slate-400">
-          <span>{dayLabel(stats.by_day[0].date)}</span>
-          <span>{dayLabel(stats.by_day[stats.by_day.length - 1].date)}</span>
+          <span>{stats.by_day[0] ? dayLabel(stats.by_day[0].date) : "—"}</span>
+          <span>{stats.by_day.length ? dayLabel(stats.by_day[stats.by_day.length - 1].date) : "—"}</span>
         </div>
       </Section>
 
-      <Section title={`🤖 ${t("stats.aiTitle")}`}>
+      <Section title={t("stats.aiTitle")} icon="spark">
         <AIPanel title={t("stats.aiReports")} block={stats.ai_reports} />
         <AIPanel title={t("stats.aiCleanups")} block={stats.ai_cleanups} />
       </Section>
 
-      <Section title={`🧹 ${t("stats.archive")}`}>
+      <Section title={t("stats.archive")} icon="sweep">
         {archive === null ? (
           <p className="text-sm text-slate-500">{t("stats.loading")}</p>
         ) : archive.length === 0 ? (
@@ -179,7 +180,7 @@ export default function StatsPage() {
                     </figure>
                   ) : (
                     <div className="grid h-28 place-items-center rounded-lg bg-emerald-50 p-2 text-center text-xs text-emerald-800">
-                      ✓ {t("stats.adminCleaned")}
+                      <Icon name="check" className="inline-icon"/> {t("stats.adminCleaned")}
                     </div>
                   )}
                 </div>

@@ -1,6 +1,7 @@
 "use client";
 import { Suspense, useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Icon from "@/components/Icon";
+import Link from "@/components/MotionLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { getCurrentPosition, takePhoto } from "@/lib/native";
@@ -120,14 +121,14 @@ function CleanupInner() {
   if (done)
     return (
       <div className="mx-auto mt-16 max-w-md space-y-4 rounded-2xl border bg-white p-6 text-center">
-        <p className="text-4xl">🧹✅</p>
+        <div className="success-seal"><Icon name="check"/></div>
         <h1 className="text-xl font-bold">{t("cleanup.doneTitle")}</h1>
         <p className="text-slate-600">{t("cleanup.doneText")}</p>
         <div className="flex justify-center gap-2">
           <Link href="/cabinet" className="inline-block rounded-lg bg-emerald-600 px-5 py-2 font-semibold !text-white">
             {t("nav.mine")}
           </Link>
-          <Link href="/" className="inline-block rounded-lg bg-slate-200 px-5 py-2 font-semibold !text-slate-700">
+          <Link href="/map" className="inline-block rounded-lg bg-slate-200 px-5 py-2 font-semibold !text-slate-700">
             {t("cleanup.toMap")}
           </Link>
         </div>
@@ -135,8 +136,8 @@ function CleanupInner() {
     );
 
   return (
-    <div className="safe-bottom mx-auto max-w-md space-y-4 p-4">
-      <h1 className="text-xl font-bold">{t("cleanup.title")}</h1>
+    <div className="safe-bottom form-page mx-auto space-y-4 p-4">
+      <div className="page-intro"><div className="eyebrow">{t("brand.step3")}</div><h1>{t("cleanup.title")}</h1></div>
 
       {report && (
         <div className="flex gap-3 rounded-xl border bg-white p-3">
@@ -176,17 +177,17 @@ function CleanupInner() {
       <button
         type="button"
         onClick={pickPhoto}
-        className="grid h-56 w-full place-items-center overflow-hidden rounded-2xl border-2 border-dashed bg-white text-slate-500"
+        className="upload-zone grid h-56 w-full place-items-center overflow-hidden rounded-2xl border-2 border-dashed bg-white text-slate-500"
       >
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt={t("report.photoAlt")} className="h-full w-full object-cover" />
         ) : (
-          <span>{t("report.takePhoto")}</span>
+          <span className="upload-prompt"><Icon name="camera"/><strong>{t("brand.upload")}</strong><span>JPEG · PNG · WebP</span></span>
         )}
       </button>
 
-      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">🔒 {t("report.privacy")}</p>
+      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900"><Icon name="shield" className="inline-icon"/> {t("report.privacy")}</p>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button

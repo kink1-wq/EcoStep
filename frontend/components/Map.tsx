@@ -1,6 +1,7 @@
 "use client";
 import "leaflet/dist/leaflet.css";
-import Link from "next/link";
+import Icon from "./Icon";
+import Link from "@/components/MotionLink";
 import type { Map as LeafletMap } from "leaflet";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CircleMarker, MapContainer, Pane, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
@@ -109,14 +110,14 @@ function PointPopup({
       <b>{category(r.category) || t("cabinet.pointDefault")}</b>
       <p className="my-1">{desc(r)}</p>
       <small className="text-slate-500">{date(r.created_at)}</small>
-      {count > 0 && <p className="my-1 text-xs font-medium text-emerald-700">👁 {t("map.supportCount", { n: count })}</p>}
+      {count > 0 && <p className="my-1 text-xs font-medium text-emerald-700"><Icon name="eye" className="inline-icon"/> {t("map.supportCount", { n: count })}</p>}
 
       <div className="mt-2 flex flex-col gap-1.5">
         <Link
           href={`/cleanup?id=${r.id}`}
           className="ecostep-btn rounded-lg bg-emerald-600 py-1.5 text-center text-sm font-semibold !text-white hover:bg-emerald-700"
         >
-          {t("map.cleaned")}
+          <Icon name="sweep" className="inline-icon"/> {t("map.cleaned")}
         </Link>
 
         <button
@@ -125,7 +126,7 @@ function PointPopup({
           disabled={busy || supported}
           className="rounded-lg border border-emerald-600 py-1.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
         >
-          {supported ? t("map.supportThanks") : t("map.support")}
+          <Icon name={supported ? "check" : "eye"} className="inline-icon"/> {supported ? t("map.supportThanks") : t("map.support")}
         </button>
 
         <div className="flex gap-1.5">
@@ -133,7 +134,7 @@ function PointPopup({
             href={`/appeal?id=${r.id}`}
             className="flex-1 rounded-lg border py-1.5 text-center text-xs font-medium !text-slate-700 hover:bg-slate-50"
           >
-            {t("map.appeal")}
+            <Icon name="file" className="inline-icon"/> {t("map.appeal")}
           </Link>
           <button
             type="button"
@@ -141,7 +142,7 @@ function PointPopup({
             disabled={flagged}
             className="flex-1 rounded-lg border py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
           >
-            {t("map.flag")}
+            <Icon name="flag" className="inline-icon"/> {t("map.flag")}
           </button>
         </div>
 
@@ -170,7 +171,7 @@ function PointPopup({
             disabled={removing}
             className="rounded-lg bg-red-600 py-1.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
           >
-            {removing ? t("map.deleting") : t("map.delete")}
+            <Icon name="trash" className="inline-icon"/> {removing ? t("map.deleting") : t("map.delete")}
           </button>
         )}
       </div>
@@ -181,6 +182,10 @@ function PointPopup({
 export default function Map() {
   const { session, isAdmin } = useSession();
   const { t, err, category: catLabel } = useI18n();
+  const [tilesFailed, setTilesFailed] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [reload, setReload] = useState(0);
   const [query, setQuery] = useState("");
   const [reports, setReports] = useState<Report[]>([]);
   const [category, setCategory] = useState("");
@@ -224,12 +229,16 @@ export default function Map() {
 
   useEffect(() => {
     if (!query) return;
-    api<Report[]>(`/api/reports?${query}`).then(setReports).catch(() => {});
-  }, [query]);
+    let current = true;
+    setLoading(true);
+    setLoadFailed(false);
+    api<Report[]>(`/api/reports?${query}`).then(data => { if (current) setReports(data); }).catch(() => { if (current) setLoadFailed(true); }).finally(() => { if (current) setLoading(false); });
+    return () => { current = false; };
+  }, [query, reload]);
 
   const categories = useMemo(
-    () => Array.from(new Set(reports.map((r) => r.category).filter(Boolean))) as string[],
-    [reports]
+    () => Array.from(new Set([...reports.map((r) => r.category).filter(Boolean), ...(category ? [category] : [])])) as string[],
+    [reports, category]
   );
   const visible = category ? reports.filter((r) => r.category === category) : reports;
 
@@ -251,7 +260,8 @@ export default function Map() {
     <div className="relative h-full">
       <MapContainer center={CENTER} zoom={12} scrollWheelZoom>
         <TileLayer
-          attribution="&copy; OpenStreetMap"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          eventHandlers={{ tileerror: () => setTilesFailed(true), tileload: () => setTilesFailed(false) }}
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Controller onBounds={setQuery} onMap={setMapInst} />
@@ -307,7 +317,8 @@ export default function Map() {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="absolute left-3 top-3 z-[1000] rounded-lg border bg-white px-3 py-2 text-sm shadow"
+          aria-label={t("map.allCategories")}
+          className="map-filter"
         >
           <option value="">{t("map.allCategories")}</option>
           {categories.map((c) => (
@@ -323,14 +334,16 @@ export default function Map() {
         onClick={locateMe}
         aria-label={t("map.locate")}
         title={t("map.locate")}
-        className="absolute right-3 z-[1000] grid h-12 w-12 place-items-center rounded-full border bg-white text-xl shadow-lg hover:bg-slate-50 active:bg-slate-100"
+        className="map-locate absolute right-3 z-[1000] grid h-12 w-12 place-items-center rounded-full border bg-white text-xl shadow-lg hover:bg-slate-50 active:bg-slate-100"
         style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))" }}
       >
-        📍
+        <Icon name="locate"/>
       </button>
 
+      {tilesFailed && <p role="status" className="map-tiles-error">{t("brand.tilesError")}</p>}
+      {loadFailed ? <div role="alert" className="map-state">{t("brand.mapError")}<button onClick={() => setReload(n => n + 1)}>{t("brand.retry")}</button></div> : loading ? <div role="status" className="map-state">{t("brand.loading")}</div> : visible.length === 0 ? <div role="status" className="map-state">{t(category ? "brand.mapFilterEmpty" : "brand.mapEmpty")}</div> : null}
       {error && (
-        <p className="absolute bottom-3 left-1/2 z-[1000] -translate-x-1/2 rounded-lg bg-red-600 px-3 py-1.5 text-sm text-white shadow">
+        <p className="map-action-error absolute bottom-3 left-1/2 z-[1000] -translate-x-1/2 rounded-lg bg-red-600 px-3 py-1.5 text-sm text-white shadow">
           {error}
         </p>
       )}

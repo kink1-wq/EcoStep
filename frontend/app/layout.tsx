@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./motion.css";
 import Header from "@/components/Header";
+import MotionShell from "@/components/MotionShell";
 import { I18nProvider } from "@/lib/i18n";
 
 export const metadata: Metadata = {
@@ -14,19 +16,18 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#059669",
+  themeColor: "#193E2E",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      {/* flex-колонка на ТОЧНУЮ высоту экрана (не min-height!) — только так процентная высота
-          (h-full) корректно пробрасывается вниз до карты через вложенные блоки.
-          Контент выше этой высоты всё равно прокручивается — overflow тут не ограничен. */}
-      <body className="flex h-screen h-[100dvh] flex-col bg-slate-50 text-slate-900 antialiased">
+      <body className="site-body antialiased">
         <I18nProvider>
+          <MotionShell>
           <Header />
-          <main className="min-h-0 flex-1">{children}</main>
+          <main id="main" className="site-main">{children}</main>
+          </MotionShell>
         </I18nProvider>
       </body>
     </html>

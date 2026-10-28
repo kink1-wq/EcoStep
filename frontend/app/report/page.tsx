@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Icon from "@/components/Icon";
+import Link from "@/components/MotionLink";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/useSession";
@@ -133,7 +134,7 @@ export default function ReportPage() {
   if (done)
     return (
       <div className="mx-auto mt-16 max-w-md space-y-4 rounded-2xl border bg-white p-6 text-center">
-        <p className="text-4xl">✅</p>
+        <div className="success-seal"><Icon name="check"/></div>
         <h1 className="text-xl font-bold">{t("report.doneTitle")}</h1>
         <p className="text-slate-600">{t("report.doneText")}</p>
         <Link href="/cabinet" className="inline-block rounded-lg bg-emerald-600 px-5 py-2 font-semibold !text-white">
@@ -143,24 +144,25 @@ export default function ReportPage() {
     );
 
   return (
-    <div className="safe-bottom mx-auto max-w-md space-y-4 p-4">
-      <h1 className="text-xl font-bold">{t("report.title")}</h1>
+    <div className="safe-bottom form-page mx-auto space-y-4 p-4">
+      <div className="page-intro"><div className="eyebrow">{t("brand.firstStep")}</div><h1>{t("report.title")}</h1><p>{t("brand.reportIntro")}</p></div><div className="eyebrow">{t("brand.photoStep")}</div>
 
       <button
         type="button"
         onClick={pickPhoto}
-        className="grid h-56 w-full place-items-center overflow-hidden rounded-2xl border-2 border-dashed bg-white text-slate-500"
+        className="upload-zone grid h-56 w-full place-items-center overflow-hidden rounded-2xl border-2 border-dashed bg-white text-slate-500"
       >
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt={t("report.photoAlt")} className="h-full w-full object-cover" />
         ) : (
-          <span>{t("report.takePhoto")}</span>
+          <span className="upload-prompt"><Icon name="camera"/><strong>{t("brand.upload")}</strong><span>JPEG · PNG · WebP</span></span>
         )}
       </button>
 
-      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">🔒 {t("report.privacy")}</p>
+      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900"><Icon name="shield" className="inline-icon"/> {t("report.privacy")}</p>
 
+      <div className="eyebrow">{t("brand.placeStep")}</div>
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-semibold">{t("report.place")}</h2>
@@ -181,7 +183,7 @@ export default function ReportPage() {
         <p className="text-sm">
           {coords ? (
             <span className="text-emerald-700">
-              📍 {source === "manual" ? t("report.placeManual") : t("report.placeAuto")} ({coords.lat.toFixed(5)},{" "}
+              <Icon name="pin" className="inline-icon"/> {source === "manual" ? t("report.placeManual") : t("report.placeAuto")} ({coords.lat.toFixed(5)},{" "}
               {coords.lng.toFixed(5)})
             </span>
           ) : geoFailed ? (
@@ -195,7 +197,7 @@ export default function ReportPage() {
 
       {nearby.length > 0 && (
         <div className="space-y-2 rounded-2xl border border-amber-300 bg-amber-50 p-3">
-          <h2 className="font-semibold text-amber-900">⚠ {t("report.nearTitle")}</h2>
+          <h2 className="font-semibold text-amber-900"><Icon name="alert" className="inline-icon"/> {t("report.nearTitle")}</h2>
           <p className="text-sm text-amber-900">{t("report.nearText", { r: DUPLICATE_RADIUS_M })}</p>
           {nearby.map((r) => (
             <div key={r.id} className="flex gap-3 rounded-xl bg-white p-2">
@@ -205,7 +207,7 @@ export default function ReportPage() {
                 <b className="block truncate text-sm">{category(r.category)}</b>
                 <p className="line-clamp-2 text-xs text-slate-600">{desc(r)}</p>
                 <div className="mt-1 flex items-center justify-between gap-2">
-                  <small className="text-slate-500">👁 {voted[r.id] ?? r.support_count}</small>
+                  <small className="text-slate-500"><Icon name="eye" className="inline-icon"/> {voted[r.id] ?? r.support_count}</small>
                   {r.id in voted ? (
                     <span className="text-xs font-medium text-emerald-700">{t("map.supportThanks")}</span>
                   ) : (
@@ -225,7 +227,9 @@ export default function ReportPage() {
         </div>
       )}
 
+      <label htmlFor="report-comment" className="eyebrow">{t("brand.commentStep")} · {t("brand.optional")}</label>
       <textarea
+        id="report-comment"
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         maxLength={500}

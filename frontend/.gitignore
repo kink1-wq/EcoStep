@@ -1,6 +1,6 @@
 node_modules
 .next
 .env.local
-android/
-ios/
+/android/
+/ios/
 out/

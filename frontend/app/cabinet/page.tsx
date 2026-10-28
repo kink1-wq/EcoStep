@@ -1,4 +1,7 @@
 "use client";
+import Link from "@/components/MotionLink";
+import { StepArt } from "@/components/Brand";
+import Icon from "@/components/Icon";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
@@ -105,7 +108,7 @@ export default function CabinetPage() {
   return (
     <div className="safe-bottom mx-auto max-w-2xl space-y-3 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">{t("cabinet.title")}</h1>
+        <div className="page-intro"><div className="eyebrow">ECOSTEP / {t("brand.impact")}</div><h1>{t("cabinet.title")}</h1><p>{t("brand.cabinetIntro")}</p></div>
         {items.length > 0 && (
           <button
             onClick={clearAll}
@@ -117,7 +120,8 @@ export default function CabinetPage() {
         )}
       </div>
       {error && <p className="text-red-600">{error}</p>}
-      {reports !== null && items.length === 0 && <p className="text-slate-500">{t("cabinet.empty")}</p>}
+      {reports !== null && items.length === 0 && <div className="empty-state"><StepArt step={3}/><h2>{t("brand.emptyTitle")}</h2><p>{t("brand.emptyText")}</p><Link href="/report" className="button button-primary"><Icon name="plus"/>{t("brand.firstStep")}</Link></div>}
+      {reports === null && !error && <p role="status" className="text-sm text-slate-500">{t("brand.loading")}</p>}
 
       {items.map((item) =>
         item.kind === "report" ? (
@@ -131,7 +135,7 @@ export default function CabinetPage() {
               </div>
               <p className="line-clamp-2 text-sm text-slate-600">{desc(item.data)}</p>
               {item.data.support_count > 0 && (
-                <p className="text-xs text-emerald-700">👁 {t("map.supportCount", { n: item.data.support_count })}</p>
+                <p className="text-xs text-emerald-700"><Icon name="eye" className="inline-icon"/> {t("map.supportCount", { n: item.data.support_count })}</p>
               )}
               <div className="flex items-center justify-between">
                 <small className="text-slate-400">{date(item.data.created_at, true)}</small>

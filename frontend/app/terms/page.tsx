@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/MotionLink";
 import LegalDocument from "@/components/LegalDocument";
 import { useI18n } from "@/lib/i18n";
 
