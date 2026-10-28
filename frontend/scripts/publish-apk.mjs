@@ -19,8 +19,12 @@ if (!existsSync(src)) {
 mkdirSync(dir, { recursive: true });
 copyFileSync(src, join(dir, "EcoStep.apk"));
 const bytes = readFileSync(src);
+const version = JSON.parse(readFileSync(join(root, "android-version.json"), "utf8"));
 const info = {
   file: "EcoStep.apk",
+  versionName: version.versionName,
+  versionCode: version.versionCode,
+  buildType: "debug",
   sizeBytes: bytes.length,
   sha256: createHash("sha256").update(bytes).digest("hex"),
   builtAt: statSync(src).mtime.toISOString(),

@@ -4,7 +4,8 @@ import Icon from "@/components/Icon";
 import Link from "@/components/MotionLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
-import { getCurrentPosition, takePhoto } from "@/lib/native";
+import { getCurrentPosition } from "@/lib/native";
+import PhotoPicker from "@/components/PhotoPicker";
 import { useSession } from "@/lib/useSession";
 import { useI18n } from "@/lib/i18n";
 import type { LatLng, Report } from "@/lib/types";
@@ -38,7 +39,6 @@ function CleanupInner() {
   const [report, setReport] = useState<Report | null>(null);
   const [loadError, setLoadError] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -85,16 +85,6 @@ function CleanupInner() {
   const dist = me && report ? haversine(me, report.latitude, report.longitude) : null;
   const tooFar = dist !== null && dist > MAX_DISTANCE_M && !isAdmin; // администратору расстояние не важно
   const noLocation = !isAdmin && dist === null;
-
-  async function pickPhoto() {
-    try {
-      const f = await takePhoto();
-      setFile(f);
-      setPreview(URL.createObjectURL(f));
-    } catch (e) {
-      setError(e instanceof Error ? err(e.message) : t("report.photoFailed"));
-    }
-  }
 
   async function submit() {
     if (!file || !id) return;
@@ -174,18 +164,7 @@ function CleanupInner() {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={pickPhoto}
-        className="upload-zone grid h-56 w-full place-items-center overflow-hidden rounded-2xl border-2 border-dashed bg-white text-slate-500"
-      >
-        {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt={t("report.photoAlt")} className="h-full w-full object-cover" />
-        ) : (
-          <span className="upload-prompt"><Icon name="camera"/><strong>{t("brand.upload")}</strong><span>JPEG · PNG · WebP</span></span>
-        )}
-      </button>
+      <PhotoPicker file={file} onChange={setFile} onError={setError} disabled={busy}/>
 
       <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900"><Icon name="shield" className="inline-icon"/> {t("report.privacy")}</p>
 

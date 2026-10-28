@@ -66,27 +66,42 @@ export async function watchPosition(onPos: (p: Position) => void, onError?: () =
   return () => navigator.geolocation.clearWatch(id);
 }
 
-/** Возвращает File с фото: с камеры телефона в приложении, из выбора файла в браузере. */
-export async function takePhoto(): Promise<File> {
+export type PhotoSource = "camera" | "gallery";
+
+/** Native gallery uses Android's system photo picker without broad storage access. */
+export async function takePhoto(source: PhotoSource = "camera"): Promise<File | null> {
   if (isNative()) {
-    const photo = await Camera.getPhoto({
-      resultType: CameraResultType.Uri,
-      source: CameraSource.Camera,
-      quality: 85,
-    });
-    const res = await fetch(photo.webPath!);
-    const blob = await res.blob();
-    return new File([blob], "photo.jpg", { type: blob.type || "image/jpeg" });
+    try {
+      const photo = await Camera.getPhoto({
+        resultType: CameraResultType.Uri,
+        source: source === "gallery" ? CameraSource.Photos : CameraSource.Camera,
+        quality: 85,
+        correctOrientation: true,
+      });
+      if (!photo.webPath) throw new Error("Не удалось получить фото");
+      const res = await fetch(photo.webPath);
+      if (!res.ok) throw new Error("Не удалось получить фото");
+      const blob = await res.blob();
+      return new File([blob], `photo.${photo.format || "jpeg"}`, { type: blob.type || "image/jpeg" });
+    } catch (error) {
+      if (error instanceof Error && /cancel(?:led|ed|ation)?/i.test(error.message)) return null;
+      throw error;
+    }
   }
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
-    input.capture = "environment";
-    input.onchange = () => {
-      const f = input.files?.[0];
-      f ? resolve(f) : reject(new Error("Файл не выбран"));
+    // Omitting capture is essential: on mobile browsers it allows gallery selection.
+    if (source === "camera") input.setAttribute("capture", "environment");
+    input.hidden = true;
+    const finish = (file: File | null) => {
+      input.remove();
+      resolve(file);
     };
+    input.onchange = () => finish(input.files?.[0] ?? null);
+    input.addEventListener("cancel", () => finish(null), { once: true });
+    document.body.appendChild(input);
     input.click();
   });
 }

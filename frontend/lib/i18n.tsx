@@ -116,6 +116,9 @@ const ru = {
   // новая заявка
   "report.title": "Сообщить о проблеме",
   "report.takePhoto": "Сделать фото",
+  "report.fromGallery": "Из галереи",
+  "report.replacePhoto": "Заменить фотографию",
+  "report.selectingPhoto": "Выберите фотографию или вернитесь в приложение.",
   "report.photoAlt": "Фото",
   "report.place": "Место на карте",
   "report.myPlace": "Моё место",
@@ -374,6 +377,9 @@ const kk: Record<TKey, string> = {
 
   "report.title": "Мәселе туралы хабарлау",
   "report.takePhoto": "Суретке түсіру",
+  "report.fromGallery": "Галереядан",
+  "report.replacePhoto": "Фотосуретті ауыстыру",
+  "report.selectingPhoto": "Фотосуретті таңдаңыз немесе қосымшаға оралыңыз.",
   "report.photoAlt": "Фото",
   "report.place": "Картадағы орын",
   "report.myPlace": "Менің орным",

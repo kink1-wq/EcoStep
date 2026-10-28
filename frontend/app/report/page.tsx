@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/useSession";
 import { useI18n } from "@/lib/i18n";
-import { getCurrentPosition, takePhoto } from "@/lib/native";
+import { getCurrentPosition } from "@/lib/native";
+import PhotoPicker from "@/components/PhotoPicker";
 import LocationPicker from "@/components/LocationPickerLoader";
 import type { FocusTarget, LatLng, Report } from "@/lib/types";
 
@@ -33,7 +34,6 @@ export default function ReportPage() {
   const { session, loading } = useSession();
   const { t, err, category, desc } = useI18n();
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState("");
   const [coords, setCoords] = useState<LatLng | null>(null);
   const [focus, setFocus] = useState<FocusTarget | null>(null);
   const [source, setSource] = useState<"gps" | "manual" | null>(null);
@@ -102,16 +102,6 @@ export default function ReportPage() {
     }
   }
 
-  async function pickPhoto() {
-    try {
-      const f = await takePhoto();
-      setFile(f);
-      setPreview(URL.createObjectURL(f));
-    } catch (e) {
-      setError(e instanceof Error ? err(e.message) : t("report.photoFailed"));
-    }
-  }
-
   async function submit() {
     if (!file || !coords) return;
     setBusy(true);
@@ -147,18 +137,7 @@ export default function ReportPage() {
     <div className="safe-bottom form-page mx-auto space-y-4 p-4">
       <div className="page-intro"><div className="eyebrow">{t("brand.firstStep")}</div><h1>{t("report.title")}</h1><p>{t("brand.reportIntro")}</p></div><div className="eyebrow">{t("brand.photoStep")}</div>
 
-      <button
-        type="button"
-        onClick={pickPhoto}
-        className="upload-zone grid h-56 w-full place-items-center overflow-hidden rounded-2xl border-2 border-dashed bg-white text-slate-500"
-      >
-        {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt={t("report.photoAlt")} className="h-full w-full object-cover" />
-        ) : (
-          <span className="upload-prompt"><Icon name="camera"/><strong>{t("brand.upload")}</strong><span>JPEG · PNG · WebP</span></span>
-        )}
-      </button>
+      <PhotoPicker file={file} onChange={setFile} onError={setError} disabled={busy}/>
 
       <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900"><Icon name="shield" className="inline-icon"/> {t("report.privacy")}</p>
 

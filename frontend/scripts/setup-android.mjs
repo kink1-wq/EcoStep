@@ -13,6 +13,20 @@ if (!existsSync(androidDir)) {
   process.exit(0);
 }
 
+// Keep the application version reproducible when the ignored Android project is regenerated.
+const version = JSON.parse(readFileSync(join(root, "android-version.json"), "utf8"));
+if (!Number.isSafeInteger(version.versionCode) || version.versionCode < 1 || !/^\d+\.\d+\.\d+$/.test(version.versionName)) {
+  throw new Error("Некорректная версия в android-version.json");
+}
+const gradlePath = join(androidDir, "app", "build.gradle");
+if (existsSync(gradlePath)) {
+  const gradle = readFileSync(gradlePath, "utf8")
+    .replace(/versionCode\s+\d+/, `versionCode ${version.versionCode}`)
+    .replace(/versionName\s+"[^"]+"/, `versionName "${version.versionName}"`);
+  writeFileSync(gradlePath, gradle);
+  console.log(`[android] Версия ${version.versionName} (${version.versionCode}).`);
+}
+
 // 1) Логотип
 const iconsFrom = join(root, "resources", "android", "res");
 const iconsTo = join(androidDir, "app", "src", "main", "res");

@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "test:photos": "node --test scripts/native-photo.test.mjs",
     "start": "next start",
     "export": "next build",
     "cap:sync": "next build && node scripts/strip-downloads.mjs && npx cap sync && node scripts/setup-android.mjs",

@@ -340,3 +340,10 @@ html[lang=kk] .hero h1 { font-size: clamp(39px, 4.4vw, 62px); }
 @media (max-width: 760px) { html[lang=kk] .hero h1 { font-size: 43px; letter-spacing: -2px; } }
 @media (max-width: 360px) { html[lang=kk] .hero h1 { font-size: 36px; } }
 .empty-state > .step-art { width: 210px; height: 112px; margin: 0 auto; }
+.photo-picker { display: grid; gap: 12px; }
+.photo-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.photo-actions button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px; border: 1px solid #bcc8af; border-radius: 8px; background: #fcfbf6; font-size: 12px; font-weight: 650; color: var(--forest); }
+.photo-actions button:last-child { background: #e3edcd; }
+.photo-actions button:hover { background: #dce8c6; }
+.photo-actions button:disabled { opacity: .55; }
+.photo-actions svg { width: 19px; height: 19px; flex-shrink: 0; }

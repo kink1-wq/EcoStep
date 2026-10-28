@@ -1,6 +1,9 @@
 {
   "file": "EcoStep.apk",
-  "sizeBytes": 9601588,
-  "sha256": "4e93088fdc2d66cb96c0f1715207b0fe783c09f5d47d0976618480dba332cf5e",
-  "builtAt": "2026-10-15T14:32:16.141057+00:00"
+  "versionName": "1.1.0",
+  "versionCode": 2,
+  "buildType": "debug",
+  "sizeBytes": 8163778,
+  "sha256": "9118fe4f0ba8ea29dd0429f92c68ea9f3963b8679d04c9f14cc7956e146ce978",
+  "builtAt": "2026-10-28T19:34:57.649Z"
 }
